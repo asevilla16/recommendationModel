@@ -34,6 +34,10 @@ namespace RestaurantsRecommendation
             {
                 restaurantsDictionary.Add(item.ID, item.Name);
             }
+            RestauranID.DataTextField = "Value";
+            RestauranID.DataValueField = "Key";
+            RestauranID.DataSource = restaurantsDictionary;
+            RestauranID.DataBind();
             return restaurants;
         }
         protected List<string> MapRecommendationResults (string modelResult)
@@ -64,10 +68,7 @@ namespace RestaurantsRecommendation
             {
                 ListBox1.Items.Add(item);
             }
-            RestauranID.DataTextField = "Value";
-            RestauranID.DataValueField = "Key";
-            RestauranID.DataSource = restaurantsDictionary;
-            RestauranID.DataBind();
+          
         }
     }
 }
