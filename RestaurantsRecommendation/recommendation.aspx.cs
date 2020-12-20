@@ -18,10 +18,15 @@ namespace RestaurantsRecommendation
         List<Restaurant> restaurants = new List<Restaurant>();
         List<string> restaurantNames = new List<string>();
         Dictionary<string, string> restaurantsDictionary = new Dictionary<string, string>();
+        public bool isInitialLoad = true;
+
+        protected void Page_Init(object sender, EventArgs e)
+        {
+            loadRestaurants();
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            loadRestaurants();
         }
         List<Restaurant> loadRestaurants ()
         {
@@ -34,10 +39,14 @@ namespace RestaurantsRecommendation
             {
                 restaurantsDictionary.Add(item.ID, item.Name);
             }
-            RestauranID.DataTextField = "Value";
+            if(isInitialLoad)
+            {
+  RestauranID.DataTextField = "Value";
             RestauranID.DataValueField = "Key";
             RestauranID.DataSource = restaurantsDictionary;
             RestauranID.DataBind();
+            }
+          
             return restaurants;
         }
         protected List<string> MapRecommendationResults (string modelResult)
@@ -55,6 +64,7 @@ namespace RestaurantsRecommendation
         }
         protected void Unnamed1_Click(object sender, EventArgs e)
         {
+            isInitialLoad = false;
             ListBox1.Items.Clear();
             var client = new RestClient("https://ussouthcentral.services.azureml.net/workspaces/bb8a08c8c38f416aa3a883951de0ff4f/services/d0924fd4b0434428be9ca81b23a815af/execute?api-version=2.0&details=true");
             client.Timeout = -1;
