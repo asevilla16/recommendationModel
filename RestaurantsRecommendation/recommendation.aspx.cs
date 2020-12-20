@@ -16,6 +16,7 @@ namespace RestaurantsRecommendation
     public partial class WebForm1 : System.Web.UI.Page
     {
         List<Restaurant> restaurants = new List<Restaurant>();
+        List<string> restaurantNames = new List<string>();
         protected void Page_Load(object sender, EventArgs e)
         {
             Debug.WriteLine(loadRestaurants());
@@ -27,17 +28,22 @@ namespace RestaurantsRecommendation
             {
                 restaurants = JsonConvert.DeserializeObject<List<Restaurant>>(sr.ReadToEnd());
             }
+            restaurantNames = MapRestaurantNames();
             return restaurants;
         }
-        protected List<string> MapResults (string modelResult)
+        protected List<string> MapRecommendationResults (string modelResult)
         {
-            Root recommendations = new Root();
-            recommendations = JsonConvert.DeserializeObject<Root>(modelResult);
-            List<string> mappedRecommendations = recommendations.Results.output1.value.Values.SelectMany(x => x).ToList();
-            List<string> restaurantNames = restaurants.Where(x => mappedRecommendations.Contains(x.ID)).Select(v => v.Name).ToList();
+            Root rawRecommendations = new Root();
+            rawRecommendations = JsonConvert.DeserializeObject<Root>(modelResult);
+            List<string> mappedRecommendations = rawRecommendations.Results.output1.value.Values.SelectMany(x => x).ToList();
+            List<string> recommendations = restaurants.Where(x => mappedRecommendations.Contains(x.ID)).Select(v => v.Name).ToList();
+            return recommendations;
+        }
+        protected List<string> MapRestaurantNames()
+        {
+            List<string> restaurantNames = restaurants.Select(v => v.Name).ToList();
             return restaurantNames;
         }
-
         protected void Unnamed1_Click(object sender, EventArgs e)
         {
             var client = new RestClient("https://ussouthcentral.services.azureml.net/workspaces/bb8a08c8c38f416aa3a883951de0ff4f/services/d0924fd4b0434428be9ca81b23a815af/execute?api-version=2.0&details=true");
@@ -48,7 +54,7 @@ namespace RestaurantsRecommendation
             request.AddParameter("application/json", "{\r\n  \"Inputs\": {\r\n    \"input1\": {\r\n      \"ColumnNames\": [\r\n        \"Iduser\",\r\n        \"Rating\",\r\n        \"RestauranID\",\r\n        \"date\"\r\n      ],\r\n      \"Values\": [\r\n        [\r\n          \"" + Iduser.Value + "\",\r\n          \""+ Rating.Value +"\",\r\n          \"" + RestauranID.Value + "\",\r\n          \"" + date.Value + "\"\r\n        ]\r\n      ]\r\n    }\r\n  },\r\n  \"GlobalParameters\": {}\r\n}", ParameterType.RequestBody);
             IRestResponse response = client.Execute(request);
             Console.WriteLine(response.Content);
-            List<string> results = MapResults(response.Content.ToString());
+            List<string> results = MapRecommendationResults(response.Content.ToString());
             foreach (var item in results)
             {
                 ListBox1.Items.Add(item);
