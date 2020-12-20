@@ -22,6 +22,9 @@
           <!-- Recommendation form -->
 
           <form id="form1" runat="server">
+           <div style="display: grid; grid-template-columns: 50% 50%">
+           <div> 
+
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -73,19 +76,18 @@
 
             <asp:LinkButton ID="submitBtn" class="btn btn-success btn-lg btn-block" runat="server" type="submit" OnClick="Unnamed1_Click"><i class="fas fa-database"></i> Aceptar
             </asp:LinkButton>
-        </form>
-
-          <!-- End Recommendation Form -->
-
-      </div>
-      <div class="col-md-7">
+              </div>
+              <div>
           <h6 class="text-center">
               Listado de Sugerencias
           </h6>
 
-          <asp:Label ID="lblResult" Text="text" runat="server" />
+             <asp:ListBox ID="ListBox1" runat="server" Height="307px" Width="207px"/>
+           </div>
+           <div>
+               </form>
 
-      </div>
+          <!-- End Recommendation Form -->
   </div>
 </div>
 </body>

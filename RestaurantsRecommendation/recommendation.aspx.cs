@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -14,6 +15,7 @@ namespace RestaurantsRecommendation
 {
     public partial class WebForm1 : System.Web.UI.Page
     {
+        List<Restaurant> restaurants = new List<Restaurant>();
         protected void Page_Load(object sender, EventArgs e)
         {
             Debug.WriteLine(loadRestaurants());
@@ -21,13 +23,19 @@ namespace RestaurantsRecommendation
         }
         List<Restaurant> loadRestaurants ()
         {
-            List<Restaurant> restaurants = new List<Restaurant>();
             using (StreamReader sr = new StreamReader(Server.MapPath("restaurantes.json")))
             {
                 restaurants = JsonConvert.DeserializeObject<List<Restaurant>>(sr.ReadToEnd());
-
             }
             return restaurants;
+        }
+        protected List<string> MapResults (string modelResult)
+        {
+            Root recommendations = new Root();
+            recommendations = JsonConvert.DeserializeObject<Root>(modelResult);
+            List<string> mappedRecommendations = recommendations.Results.output1.value.Values.SelectMany(x => x).ToList();
+            List<string> restaurantNames = restaurants.Where(x => mappedRecommendations.Contains(x.ID)).Select(v => v.Name).ToList();
+            return restaurantNames;
         }
 
         protected void Unnamed1_Click(object sender, EventArgs e)
@@ -40,8 +48,11 @@ namespace RestaurantsRecommendation
             request.AddParameter("application/json", "{\r\n  \"Inputs\": {\r\n    \"input1\": {\r\n      \"ColumnNames\": [\r\n        \"Iduser\",\r\n        \"Rating\",\r\n        \"RestauranID\",\r\n        \"date\"\r\n      ],\r\n      \"Values\": [\r\n        [\r\n          \"" + Iduser.Value + "\",\r\n          \""+ Rating.Value +"\",\r\n          \"" + RestauranID.Value + "\",\r\n          \"" + date.Value + "\"\r\n        ]\r\n      ]\r\n    }\r\n  },\r\n  \"GlobalParameters\": {}\r\n}", ParameterType.RequestBody);
             IRestResponse response = client.Execute(request);
             Console.WriteLine(response.Content);
-
-            lblResult.Text = response.Content.ToString();
+            List<string> results = MapResults(response.Content.ToString());
+            foreach (var item in results)
+            {
+                ListBox1.Items.Add(item);
+            }
         }
     }
 }
